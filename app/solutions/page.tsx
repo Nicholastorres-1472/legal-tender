@@ -4,39 +4,43 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { NextResponse } from 'next/server'
 
 export default function Home() {
   const router = useRouter();
   const [text, setText] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
-  const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [aiProcessing, setAiProcessing] = useState(false);
+  const [aiResult, setAiResult] = useState<string | null>(null);
 
-  const processContent = async () => {
+  const processWithAI = async () => {
     try {
-      setProcessing(true);
+      setAiProcessing(true);
+      setAiResult(null);
+      
       const formData = new FormData();
       
+      // Add files
       files.forEach(file => {
         formData.append('files', file);
       });
       
+      // Add text
       if (text) {
         formData.append('text', text);
       }
 
-      const response = await fetch('http://localhost:8000/api/process', {
+      const response = await fetch('/api/agent', {
         method: 'POST',
         body: formData,
       });
 
       const data = await response.json();
-      setResult(data);
+      setAiResult(data.result);
     } catch (error) {
-      console.error('Error processing content:', error);
+      console.error('Error processing with AI:', error);
+      setAiResult('Error processing content with AI agent');
     } finally {
-      setProcessing(false);
+      setAiProcessing(false);
     }
   };
 
@@ -62,6 +66,7 @@ export default function Home() {
   const clearContent = () => {
     setText('');
     setFiles([]);
+    setAiResult(null);
   };
 
   return (
@@ -112,34 +117,32 @@ export default function Home() {
         )}
 
         {(files.length > 0 || text) && (
-            <>
+            <div className="mt-6 flex gap-4">
               <button
-                onClick={processContent}
-                disabled={processing}
-                className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-4"
+                onClick={processWithAI}
+                disabled={aiProcessing}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {processing ? 'Processing...' : 'Process Content'}
+                {aiProcessing ? 'AI Processing...' : 'Process with AI Agent'}
               </button>
-              
-              {result && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h3 className="font-semibold text-green-900 mb-2">Processing Results:</h3>
-                  <pre className="whitespace-pre-wrap text-green-600">
-                    {JSON.stringify(result, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </>
+
+              <button
+                onClick={clearContent}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
           )}
-        
-        {/* Clear button */}
-        {(files.length > 0 || text) && (
-          <button
-            onClick={clearContent}
-            className="mt-6 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-          >
-            Clear All
-          </button>
+
+        {/* AI Agent Results */}
+        {aiResult && (
+          <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <h3 className="font-semibold text-purple-900 mb-2">AI Agent Results:</h3>
+            <div className="whitespace-pre-wrap text-purple-800">
+              {aiResult}
+            </div>
+          </div>
         )}
       </main>
     </div>
