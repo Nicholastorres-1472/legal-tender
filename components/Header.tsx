@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({
   navItems = [
     { label: "Home", href: "/" },
     { label: "About", href: "/about" },
-    { label: "Services", href: "/services" },
+    { label: "Solutions", href: "/solutions" },
     { label: "Contact", href: "/contact" }
   ]
 }) => {

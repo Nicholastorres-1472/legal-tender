@@ -28,7 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header logo="Legal Tender"/>
+        <Header logo="LexTidy"/>
         {children}
       </body>
     </html>
